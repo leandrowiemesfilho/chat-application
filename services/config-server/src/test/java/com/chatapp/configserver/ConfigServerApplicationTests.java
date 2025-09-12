@@ -1,10 +1,10 @@
-package com.chatapp.apigateway;
+package com.chatapp.configserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DiscoveryServiceApplicationTests {
+class ConfigServerApplicationTests {
 
     @Test
     void contextLoads() {

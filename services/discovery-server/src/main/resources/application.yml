@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: discovery-server
+  config:
+    import: optional:configserver:http://localhost:8888
+
+# Optional: Add retry configuration for better startup handling
+cloud:
+  config:
+    retry:
+      initial-interval: 1000
+      max-interval: 3000
+      max-attempts: 10

@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/chat_aggregate
+    username: chat
+    password: chat
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database: postgresql
+
+server:
+  port: 8081

@@ -1,7 +1,7 @@
 CREATE TYPE user_status AS ENUM ('ACTIVE', 'INACTIVE', 'SUSPENDED', 'PENDING');
 CREATE TYPE auth_provider AS ENUM ('LOCAL', 'GOOGLE', 'FACEBOOK', 'APPLE');
 
-CREATE TABLE auth_users
+CREATE TABLE IF NOT EXISTS auth_users
 (
     id                    BIGSERIAL PRIMARY KEY,
     phone_number          VARCHAR(15)              NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE auth_users
     CONSTRAINT chk_email_format CHECK (email IS NULL OR email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
 
-CREATE TABLE auth_user_sessions
+CREATE TABLE IF NOT EXISTS auth_user_sessions
 (
     id            BIGSERIAL PRIMARY KEY,
     user_id       BIGINT                   NOT NULL REFERENCES auth_users (id) ON DELETE CASCADE,
@@ -48,7 +48,7 @@ CREATE TABLE auth_user_sessions
 );
 
 -- Create password_reset_tokens table
-CREATE TABLE auth_password_reset_tokens
+CREATE TABLE IF NOT EXISTS auth_password_reset_tokens
 (
     id         BIGSERIAL PRIMARY KEY,
     user_id    BIGINT                   NOT NULL REFERENCES auth_users (id) ON DELETE CASCADE,
@@ -58,7 +58,7 @@ CREATE TABLE auth_password_reset_tokens
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE auth_email_verification_tokens
+CREATE TABLE IF NOT EXISTS auth_email_verification_tokens
 (
     id         BIGSERIAL PRIMARY KEY,
     user_id    BIGINT                   NOT NULL REFERENCES auth_users (id) ON DELETE CASCADE,
@@ -67,7 +67,7 @@ CREATE TABLE auth_email_verification_tokens
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE auth_audit_log
+CREATE TABLE IF NOT EXISTS auth_audit_log
 (
     id            BIGSERIAL PRIMARY KEY,
     user_id       BIGINT                   REFERENCES auth_users (id) ON DELETE SET NULL,

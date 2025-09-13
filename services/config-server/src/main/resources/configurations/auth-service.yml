@@ -22,5 +22,9 @@ spring:
     sql-migration-suffixes: .sql
     table: flyway_schema_history_auth
 
+jwt:
+  secret: 4eef4ba077b09d3eb41b0fb500926717edb692034cbd7b3c07081c7c08755d1f
+  expiration: 36000000
+
 server:
   port: 8081

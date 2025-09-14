@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
     private final UserService userService;
     private final UserSessionService userSessionService;
@@ -60,7 +60,7 @@ public class AuthController {
             }
 
             // Check if MFA is required
-            if (user.getMfaEnabled()) {
+            if (Boolean.TRUE.equals(user.getMfaEnabled())) {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(Map.of("mfa_required", true, "user_id", user.getId()));
             }

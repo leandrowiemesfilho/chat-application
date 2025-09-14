@@ -1,7 +1,7 @@
-package com.chatapp.authservice.service;
+package com.chatapp.apigateway.service;
 
-import com.chatapp.authservice.model.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -10,23 +10,19 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
 public class JwtService {
+
     @Value("${jwt.secret}")
-    private String secret;
+    private String jwtSecret;
 
     @Value("${jwt.expiration}")
     private long expirationTime;
 
-    public SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
-    }
-
-    public String generateToken(String phoneNumber) {
-        return generateToken(phoneNumber, new HashMap<>());
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
     public String generateToken(String phoneNumber, Map<String, Object> claims) {
@@ -34,51 +30,25 @@ public class JwtService {
                 .setSubject(phoneNumber)
                 .addClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + this.expirationTime))
+                .setExpiration(new Date(System.currentTimeMillis() + getExpirationTime()))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateToken(final User user) {
-        final Map<String, Object> claims = new HashMap<>();
-
-        claims.put("userId", user.getId());
-        claims.put("name", user.getName());
-        claims.put("email", user.getEmail());
-        claims.put("roles", "USER"); // You can add roles later
-
-        return this.generateToken(user.getPhoneNumber(), claims);
-    }
-
-    public String getPhoneNumberFromToken(final String token) {
-        final Claims claims = Jwts.parserBuilder()
+    public Claims validateToken(final String token) throws JwtException {
+        return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-
-        return claims.getSubject();
     }
 
-    public Long getUserIdFromToken(final String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.get("userId", Long.class);
-    }
-
-    public boolean validateToken(final String token) {
+    public boolean isTokenValid(final String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(token);
+            this.validateToken(token);
 
             return true;
-        } catch (IllegalArgumentException e) {
+        } catch (final JwtException | IllegalArgumentException e) {
             return false;
         }
     }

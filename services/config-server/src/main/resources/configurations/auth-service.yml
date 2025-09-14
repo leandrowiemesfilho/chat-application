@@ -22,9 +22,19 @@ spring:
     sql-migration-suffixes: .sql
     table: flyway_schema_history_auth
 
-jwt:
-  secret: 4eef4ba077b09d3eb41b0fb500926717edb692034cbd7b3c07081c7c08755d1f
-  expiration: 36000000
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
 
 server:
   port: 8081
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    com.chatapp.auth: DEBUG

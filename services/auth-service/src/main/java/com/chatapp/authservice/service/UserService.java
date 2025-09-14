@@ -17,19 +17,16 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserMapper userMapper;
-    private final JwtService jwtService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final LoginHistoryService loginHistoryService;
 
     @Autowired
     public UserService(final UserMapper userMapper,
-                       final JwtService jwtService,
                        final UserRepository userRepository,
                        final PasswordEncoder passwordEncoder,
                        final LoginHistoryService loginHistoryService) {
         this.userMapper = userMapper;
-        this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.loginHistoryService = loginHistoryService;
@@ -72,12 +69,11 @@ public class UserService {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        final String token = this.jwtService.generateToken(phoneNumber);
         final User user = this.userMapper.fromRegisterRequest(registerRequest);
 
         this.userRepository.save(user);
 
-        return this.userMapper.toAuthResponseWithToken(token, user);
+        return this.userMapper.toAuthResponseWithToken(user);
     }
 
     @Transactional

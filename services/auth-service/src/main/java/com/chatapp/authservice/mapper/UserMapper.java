@@ -36,9 +36,8 @@ public class UserMapper {
                 user.getProfilePictureUrl(), null, false, user.getMfaEnabled());
     }
 
-    public AuthResponse toAuthResponseWithToken(final String token,
-                                                final User user) {
-        return this.toAuthResponseWithToken(token, null, null, user);
+    public AuthResponse toAuthResponseWithToken(final User user) {
+        return this.toAuthResponseWithToken(null, null, null, user);
     }
 
     public AuthResponse toAuthResponseWithToken(final String token,

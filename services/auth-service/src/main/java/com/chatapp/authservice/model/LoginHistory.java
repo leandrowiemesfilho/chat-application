@@ -1,6 +1,6 @@
 package com.chatapp.authservice.model;
 
-import com.chatapp.authservice.model.converter.PostgreSQLInetType;
+import com.chatapp.authservice.model.type.PostgreSQLInetType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;

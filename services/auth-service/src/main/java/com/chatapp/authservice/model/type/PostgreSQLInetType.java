@@ -1,4 +1,4 @@
-package com.chatapp.authservice.model.converter;
+package com.chatapp.authservice.model.type;
 
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.type.SqlTypes;

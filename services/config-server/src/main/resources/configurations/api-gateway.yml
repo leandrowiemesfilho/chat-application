@@ -16,11 +16,4 @@ server:
   port: 8080
 
 jwt:
-  secret: "your-jwt-secret-key-here"
-  expiration: 86400000
-
-logging:
-  level:
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
-    com.chatapp.apigateway: DEBUG
+  secret: "e3c47d5e866cb0377eb43420fba59a83bb8f98c6a0cd344a89ec01745bc0c88f"

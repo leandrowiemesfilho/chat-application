@@ -18,11 +18,15 @@ import java.util.UUID;
 @Service
 public class UserSessionService {
     private final UserMapper userMapper;
+    private final JwtService jwtService;
     private final UserSessionRepository userSessionRepository;
 
     @Autowired
-    public UserSessionService(final UserMapper userMapper, final UserSessionRepository userSessionRepository) {
+    public UserSessionService(final UserMapper userMapper,
+                              final JwtService jwtService,
+                              final UserSessionRepository userSessionRepository) {
         this.userMapper = userMapper;
+        this.jwtService = jwtService;
         this.userSessionRepository = userSessionRepository;
     }
 
@@ -40,10 +44,11 @@ public class UserSessionService {
         final ZonedDateTime now = ZonedDateTime.now();
         final ZonedDateTime expiresAt = now.plusHours(sessionDurationHours);
         final ZonedDateTime refreshExpiresAt = now.plusDays(refreshDurationDays);
+        final String sessionToken = this.jwtService.generateToken(user);
         final UserSession session = new UserSession();
 
         session.setUser(user);
-        session.setSessionToken(generateToken());
+        session.setSessionToken(sessionToken);
         session.setRefreshToken(generateToken());
         session.setDeviceId(deviceId);
         session.setDeviceName(deviceName);

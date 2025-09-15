@@ -1,10 +1,8 @@
 package com.chatapp.authservice.model;
 
-import com.chatapp.authservice.model.type.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
@@ -41,13 +39,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, columnDefinition = "user_status")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Type(PostgreSQLEnumType.class)
     private UserStatus status = UserStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "provider", nullable = false, columnDefinition = "auth_provider")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Type(PostgreSQLEnumType.class)
     private AuthProvider provider = AuthProvider.LOCAL;
 
     @Column(name = "provider_id")

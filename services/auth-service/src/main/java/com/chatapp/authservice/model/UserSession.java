@@ -1,10 +1,10 @@
 package com.chatapp.authservice.model;
 
-import com.chatapp.authservice.model.type.PostgreSQLInetType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.ZonedDateTime;
 
@@ -35,7 +35,7 @@ public class UserSession {
     private String deviceType;
 
     @Column(name = "ip_address")
-    @Type(PostgreSQLInetType.class)
+    @JdbcTypeCode(SqlTypes.INET)
     private String ipAddress;
 
     @Column(name = "user_agent", columnDefinition = "TEXT")

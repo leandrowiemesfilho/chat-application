@@ -39,7 +39,7 @@ public class JwtService {
                 .addClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + this.jwtExpirationMs))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .signWith(this.getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 }

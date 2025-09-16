@@ -51,12 +51,18 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 final Claims claims = this.jwtService.validateToken(token);
 
                 // Add user information to headers for downstream services
+                final Integer userId = claims.get("userId", Integer.class);
+                final String phoneNumber = claims.getSubject();
+                final String email = claims.get("email", String.class);
+                final String name = claims.get("name", String.class);
+                final String sessionToken = this.getSessionTokenFromClaims(claims);
+
                 final ServerHttpRequest modifiedRequest = request.mutate()
-                        .header("X-User-ID", claims.get("userId", String.class))
-                        .header("X-User-Phone", claims.getSubject())
-                        .header("X-User-Email", claims.get("email", String.class))
-                        .header("X-User-Name", claims.get("name", String.class))
-                        .header("X-Session-Token", getSessionTokenFromClaims(claims))
+                        .header("X-User-ID", userId.toString())
+                        .header("X-User-Phone", phoneNumber)
+                        .header("X-User-Email", email)
+                        .header("X-User-Name", name)
+                        .header("X-Session-Token", sessionToken)
                         .build();
 
                 return chain.filter(exchange.mutate().request(modifiedRequest).build());
@@ -84,7 +90,9 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
         response.getHeaders().add("Content-Type", "application/json");
 
-        final String errorBody = String.format("{\"error\": \"%s\", \"status\": %d}", error, HttpStatus.UNAUTHORIZED.value());
+        final String errorBody = String.format("{\"status\": %d, \"error\": \"%s\"}",
+                HttpStatus.UNAUTHORIZED.value(),
+                error);
 
         return response.writeWith(Mono.just(response.bufferFactory().wrap(errorBody.getBytes())));
     }

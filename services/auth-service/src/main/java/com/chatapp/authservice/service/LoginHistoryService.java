@@ -21,9 +21,10 @@ public class LoginHistoryService {
     }
 
     @Transactional
-    public void recordLogin(User user, String attemptType, String ipAddress,
-                            String userAgent, String deviceId, String failureReason) {
-        LoginHistory history = new LoginHistory();
+    public void recordLogin(final User user, final String attemptType, final String ipAddress,
+                            final String userAgent, final String deviceId, final String failureReason) {
+        final LoginHistory history = new LoginHistory();
+
         history.setUser(user);
         history.setAttemptType(attemptType);
         history.setIpAddress(ipAddress);

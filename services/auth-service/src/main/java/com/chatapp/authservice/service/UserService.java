@@ -1,8 +1,9 @@
 package com.chatapp.authservice.service;
 
+import com.chatapp.authservice.exception.UserAlreadyExistsException;
 import com.chatapp.authservice.mapper.UserMapper;
 import com.chatapp.authservice.model.User;
-import com.chatapp.authservice.model.UserStatus;
+import com.chatapp.authservice.model.enums.UserStatus;
 import com.chatapp.authservice.model.dto.AuthResponse;
 import com.chatapp.authservice.model.dto.RegisterRequest;
 import com.chatapp.authservice.repository.UserRepository;
@@ -60,13 +61,13 @@ public class UserService {
     public AuthResponse registerUser(final RegisterRequest registerRequest) {
         final String phoneNumber = registerRequest.phoneNumber();
 
-        if (existsByPhoneNumber(phoneNumber)) {
-            throw new IllegalArgumentException("Phone number already registered");
+        if (this.existsByPhoneNumber(phoneNumber)) {
+            throw new UserAlreadyExistsException();
         }
 
         if (registerRequest.email() != null && !registerRequest.email().isEmpty() &&
-                existsByEmail(registerRequest.email())) {
-            throw new IllegalArgumentException("Email already registered");
+                this.existsByEmail(registerRequest.email())) {
+            throw new UserAlreadyExistsException();
         }
 
         final User user = this.userMapper.fromRegisterRequest(registerRequest);
@@ -77,10 +78,8 @@ public class UserService {
     }
 
     @Transactional
-    public void updateLastLogin(String phoneNumber, String ipAddress, String userAgent, String deviceId) {
-        final User user = userRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
+    public void updateLastLogin(final User user, final String ipAddress,
+                                final String userAgent, final String deviceId) {
         user.setLastLogin(ZonedDateTime.now());
 
         this.userRepository.save(user);
@@ -90,8 +89,8 @@ public class UserService {
     }
 
     @Transactional
-    public void recordFailedLogin(String identifier, String ipAddress, String userAgent,
-                                  String deviceId, String failureReason) {
+    public void recordFailedLogin(final String identifier, final String ipAddress, final String userAgent,
+                                  final String deviceId, final String failureReason) {
         this.findActiveUserByIdentifier(identifier).ifPresent(user -> {
 
             user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);

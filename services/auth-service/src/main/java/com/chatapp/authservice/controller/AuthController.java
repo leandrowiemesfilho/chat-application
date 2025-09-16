@@ -1,8 +1,10 @@
 package com.chatapp.authservice.controller;
 
+import com.chatapp.authservice.exception.InvalidCredentialsException;
 import com.chatapp.authservice.model.User;
 import com.chatapp.authservice.model.dto.AuthResponse;
 import com.chatapp.authservice.model.dto.LoginRequest;
+import com.chatapp.authservice.model.dto.PasswordResetRequest;
 import com.chatapp.authservice.model.dto.RegisterRequest;
 import com.chatapp.authservice.service.PasswordResetService;
 import com.chatapp.authservice.service.UserService;
@@ -33,66 +35,60 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
-        try {
-            final AuthResponse response = userService.registerUser(registerRequest);
+    public ResponseEntity<AuthResponse> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
+        final AuthResponse response = this.userService.registerUser(registerRequest);
 
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Valid final LoginRequest loginRequest,
-                                   final HttpServletRequest httpRequest) {
-        try {
-            final User user = userService.findActiveUserByIdentifier(loginRequest.phoneNumber())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+    public ResponseEntity<AuthResponse> login(@RequestHeader("User-Agent") final String userAgent,
+                                              @RequestBody @Valid final LoginRequest loginRequest,
+                                              final HttpServletRequest httpRequest) {
+        final User user = this.userService.findActiveUserByIdentifier(loginRequest.phoneNumber())
+                .orElseThrow(InvalidCredentialsException::new);
 
-            // Verify password (pseudo-code)
-            if (!userService.verifyPassword(user, loginRequest.password())) {
-                userService.recordFailedLogin(loginRequest.phoneNumber(),
-                        httpRequest.getRemoteAddr(), httpRequest.getHeader("User-Agent"),
-                        loginRequest.deviceId(), "Invalid password");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Invalid credentials"));
-            }
+        // Verify password (pseudo-code)
+        if (!this.userService.verifyPassword(user, loginRequest.password())) {
+            this.userService.recordFailedLogin(loginRequest.phoneNumber(),
+                    httpRequest.getRemoteAddr(), userAgent,
+                    loginRequest.deviceId(), "Invalid password");
 
-            // Check if MFA is required
-            if (Boolean.TRUE.equals(user.getMfaEnabled())) {
-                return ResponseEntity.status(HttpStatus.OK)
-                        .body(Map.of("mfa_required", true, "user_id", user.getId()));
-            }
-
-            // Create session and return tokens
-            final AuthResponse response = this.userSessionService.createSession(user,
-                    loginRequest.deviceId(), loginRequest.deviceName(),
-                    loginRequest.deviceType(), httpRequest.getRemoteAddr(),
-                    httpRequest.getHeader("User-Agent"), 24, 30);
-
-            userService.updateLastLogin(user.getPhoneNumber(), httpRequest.getRemoteAddr(),
-                    httpRequest.getHeader("User-Agent"), loginRequest.deviceId());
-
-            return ResponseEntity.ok(response);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid credentials"));
+            throw new InvalidCredentialsException();
         }
+
+        // Check if MFA is required
+//            if (Boolean.TRUE.equals(user.getMfaEnabled())) {
+//                return ResponseEntity.status(HttpStatus.OK)
+//                        .body(Map.of("mfa_required", true, "user_id", user.getId()));
+//            }
+
+        // Create session and return tokens
+        final AuthResponse response = this.userSessionService.createSession(user,
+                loginRequest.deviceId(), loginRequest.deviceName(),
+                loginRequest.deviceType(), httpRequest.getRemoteAddr(),
+                userAgent, 24, 30);
+
+        this.userService.updateLastLogin(user, httpRequest.getRemoteAddr(),
+                userAgent, loginRequest.deviceId());
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
-        String sessionToken = authHeader.replace("Bearer ", "");
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") final String authHeader) {
+        final String sessionToken = authHeader.replace("Bearer ", "");
+
         this.userSessionService.revokeSessionByToken(sessionToken);
-        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refresh_token");
-        return userSessionService.refreshSession(refreshToken)
+        return this.userSessionService.refreshSession(refreshToken)
                 .map(session -> ResponseEntity.ok(Map.of(
                         "session_token", session.getSessionToken(),
                         "expires_at", session.getExpiresAt()
@@ -102,23 +98,19 @@ public class AuthController {
     }
 
     @PostMapping("/password/reset/request")
-    public ResponseEntity<?> requestPasswordReset(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-
-        this.passwordResetService.createPasswordResetToken(email);
+    public ResponseEntity<?> requestPasswordReset(@RequestBody final PasswordResetRequest request) {
+        this.passwordResetService.createPasswordResetToken(request.email());
 
         return ResponseEntity.ok(Map.of("message", "Password reset instructions sent"));
     }
 
     @PostMapping("/password/reset/confirm")
-    public ResponseEntity<?> confirmPasswordReset(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
-        String newPassword = request.get("new_password");
+    public ResponseEntity<Void> confirmPasswordReset(@RequestBody final PasswordResetRequest request) {
+        final String token = request.token();
+        final String newPassword = request.newPassword();
 
-        if (this.passwordResetService.resetPassword(token, newPassword)) {
-            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid or expired token"));
-        }
+        this.passwordResetService.resetPassword(token, newPassword);
+
+        return ResponseEntity.ok().build();
     }
 }

@@ -1,5 +1,7 @@
 package com.chatapp.authservice.model;
 
+import com.chatapp.authservice.model.enums.AuthProvider;
+import com.chatapp.authservice.model.enums.UserStatus;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;

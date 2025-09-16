@@ -1,5 +1,6 @@
 package com.chatapp.authservice.service;
 
+import com.chatapp.authservice.exception.InvalidTokenException;
 import com.chatapp.authservice.model.PasswordResetToken;
 import com.chatapp.authservice.model.User;
 import com.chatapp.authservice.repository.PasswordResetTokenRepository;
@@ -19,6 +20,7 @@ public class PasswordResetService {
     private final EmailService emailService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserSessionService userSessionService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Value("${app.password.reset.token.expiration:3600000}") // 1 hour default
@@ -28,10 +30,12 @@ public class PasswordResetService {
     public PasswordResetService(final EmailService emailService,
                                 final UserRepository userRepository,
                                 final PasswordEncoder passwordEncoder,
+                                final UserSessionService userSessionService,
                                 final PasswordResetTokenRepository passwordResetTokenRepository) {
         this.emailService = emailService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userSessionService = userSessionService;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
 
@@ -65,7 +69,7 @@ public class PasswordResetService {
     }
 
     @Transactional
-    public boolean resetPassword(final String token, final String newPassword) {
+    public void resetPassword(final String token, final String newPassword) {
         // Find valid token
         final Optional<PasswordResetToken> tokenOpt = this.passwordResetTokenRepository.findAll().stream()
                 .filter(t -> !t.getUsed() && t.getExpiresAt().isAfter(ZonedDateTime.now()))
@@ -73,7 +77,7 @@ public class PasswordResetService {
                 .findFirst();
 
         if (tokenOpt.isEmpty()) {
-            return false;
+            throw new InvalidTokenException();
         }
 
         final PasswordResetToken resetToken = tokenOpt.get();
@@ -88,9 +92,7 @@ public class PasswordResetService {
         this.passwordResetTokenRepository.save(resetToken);
 
         // Invalidate all user sessions
-        // sessionService.revokeAllUserSessions(user.getId()); // You'll need to implement this
-
-        return true;
+        this.userSessionService.revokeAllUserSessions(user.getId());
     }
 
     @Transactional

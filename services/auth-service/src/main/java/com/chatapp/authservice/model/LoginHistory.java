@@ -28,7 +28,7 @@ public class LoginHistory {
     @Column(name = "user_agent", columnDefinition = "TEXT")
     private String userAgent;
 
-    @Column(name = "device_id", length = 255)
+    @Column(name = "device_id")
     private String deviceId;
 
     @Column(name = "failure_reason", length = 100)

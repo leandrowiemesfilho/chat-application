@@ -1,7 +1,7 @@
 package com.chatapp.authservice.mapper;
 
 import com.chatapp.authservice.model.User;
-import com.chatapp.authservice.model.UserStatus;
+import com.chatapp.authservice.model.enums.UserStatus;
 import com.chatapp.authservice.model.dto.AuthResponse;
 import com.chatapp.authservice.model.dto.RegisterRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;

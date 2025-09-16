@@ -1,4 +1,4 @@
-package com.chatapp.authservice.model;
+package com.chatapp.authservice.model.enums;
 
 public enum AuthProvider {
     LOCAL,

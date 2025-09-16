@@ -18,21 +18,8 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration}")
-    private long expirationTime;
-
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
-    }
-
-    public String generateToken(String phoneNumber, Map<String, Object> claims) {
-        return Jwts.builder()
-                .setSubject(phoneNumber)
-                .addClaims(claims)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + getExpirationTime()))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
     }
 
     public Claims validateToken(final String token) throws JwtException {
@@ -67,9 +54,5 @@ public class JwtService {
         final Date expiration = this.getExpirationDateFromToken(token);
 
         return expiration.before(new Date());
-    }
-
-    public long getExpirationTime() {
-        return this.expirationTime;
     }
 }

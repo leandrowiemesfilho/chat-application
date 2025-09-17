@@ -1,8 +1,9 @@
 package com.chatapp.apigateway.filter;
 
-import com.chatapp.apigateway.service.JwtService;
+import com.chatapp.security.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
     private final JwtService jwtService;
 
+    @Autowired
     public JwtAuthenticationFilter(final JwtService jwtService) {
         super(Config.class);
 
@@ -33,7 +35,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             final String path = request.getPath().toString();
 
             // Skip JWT validation for public endpoints
-            if (this.isPublicEndpoint(path)) {
+            if (isPublicEndpoint(path)) {
                 return chain.filter(exchange);
             }
 
@@ -51,14 +53,14 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 final Claims claims = this.jwtService.validateToken(token);
 
                 // Add user information to headers for downstream services
-                final Integer userId = claims.get("userId", Integer.class);
+                final String userId = claims.get("userId", String.class);
                 final String phoneNumber = claims.getSubject();
                 final String email = claims.get("email", String.class);
                 final String name = claims.get("name", String.class);
-                final String sessionToken = this.getSessionTokenFromClaims(claims);
+                final String sessionToken = getSessionTokenFromClaims(claims);
 
                 final ServerHttpRequest modifiedRequest = request.mutate()
-                        .header("X-User-ID", userId.toString())
+                        .header("X-User-ID", userId)
                         .header("X-User-Phone", phoneNumber)
                         .header("X-User-Email", email)
                         .header("X-User-Name", name)
@@ -73,18 +75,18 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
         };
     }
 
-    private boolean isPublicEndpoint(final String path) {
+    private static boolean isPublicEndpoint(final String path) {
         return path.startsWith("/api/v1/auth/register")
                 || path.startsWith("/api/v1/auth/login")
                 || path.startsWith("/api/v1/auth/password/reset/request");
     }
 
-    private String getSessionTokenFromClaims(final Claims claims) {
+    private static String getSessionTokenFromClaims(final Claims claims) {
         // Extract session token from JWT claims if needed
         return claims.get("sessionToken", String.class);
     }
 
-    private Mono<Void> onError(final ServerWebExchange exchange, final String error) {
+    private static Mono<Void> onError(final ServerWebExchange exchange, final String error) {
         final ServerHttpResponse response = exchange.getResponse();
 
         response.setStatusCode(HttpStatus.UNAUTHORIZED);

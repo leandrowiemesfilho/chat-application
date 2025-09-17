@@ -5,6 +5,8 @@ import com.chatapp.authservice.model.User;
 import com.chatapp.authservice.model.UserSession;
 import com.chatapp.authservice.model.dto.AuthResponse;
 import com.chatapp.authservice.repository.UserSessionRepository;
+import com.chatapp.security.model.JwtUser;
+import com.chatapp.security.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -44,7 +46,8 @@ public class UserSessionService {
         final ZonedDateTime now = ZonedDateTime.now();
         final ZonedDateTime expiresAt = now.plusHours(sessionDurationHours);
         final ZonedDateTime refreshExpiresAt = now.plusDays(refreshDurationDays);
-        final String sessionToken = this.jwtService.generateToken(user);
+        final JwtUser jwtUser = getJwtUser(user);
+        final String sessionToken = this.jwtService.generateToken(jwtUser);
         final UserSession session = new UserSession();
 
         session.setUser(user);
@@ -128,5 +131,13 @@ public class UserSessionService {
 
     public Optional<User> getUserFromSession(final String sessionToken) {
         return this.validateSession(sessionToken).map(UserSession::getUser);
+    }
+
+    private static JwtUser getJwtUser(final User user) {
+        return new JwtUser(user.getId().toString(),
+                user.getName(),
+                user.getEmail(),
+                user.getPhoneNumber()
+        );
     }
 }

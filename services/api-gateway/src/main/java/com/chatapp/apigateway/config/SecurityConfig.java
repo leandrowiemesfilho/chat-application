@@ -1,5 +1,6 @@
 package com.chatapp.apigateway.config;
 
+import com.chatapp.security.service.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -16,5 +17,10 @@ public class SecurityConfig {
                         .anyExchange().permitAll()
                 )
                 .build();
+    }
+
+    @Bean
+    public JwtService jwtService() {
+        return new JwtService();
     }
 }

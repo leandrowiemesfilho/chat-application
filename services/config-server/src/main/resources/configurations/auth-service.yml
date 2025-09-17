@@ -32,7 +32,3 @@ eureka:
 
 server:
   port: 8081
-
-jwt:
-  secret: "e3c47d5e866cb0377eb43420fba59a83bb8f98c6a0cd344a89ec01745bc0c88f"
-  expiration: 86400000

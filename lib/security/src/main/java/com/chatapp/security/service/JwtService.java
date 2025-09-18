@@ -48,21 +48,11 @@ public class JwtService {
     }
 
     public boolean isTokenValid(final String token) {
-        try {
-            this.validateToken(token);
-
-            return true;
-        } catch (final JwtException | IllegalArgumentException e) {
-            return false;
-        }
+        return !this.isTokenExpired(token);
     }
 
     public Date getExpirationDateFromToken(final String token) {
-        final Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        final Claims claims = this.validateToken(token);
 
         return claims.getExpiration();
     }
@@ -71,6 +61,12 @@ public class JwtService {
         final Date expiration = this.getExpirationDateFromToken(token);
 
         return expiration.before(new Date());
+    }
+
+    public String extractUsername(final String token) {
+        final Claims claims = this.validateToken(token);
+
+        return claims.getSubject();
     }
 
     private SecretKey getSigningKey() {

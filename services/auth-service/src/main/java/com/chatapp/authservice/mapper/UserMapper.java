@@ -4,6 +4,7 @@ import com.chatapp.authservice.model.User;
 import com.chatapp.authservice.model.enums.UserStatus;
 import com.chatapp.authservice.model.dto.AuthResponse;
 import com.chatapp.authservice.model.dto.RegisterRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.time.ZonedDateTime;
 public class UserMapper {
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
     public UserMapper(final PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
@@ -28,12 +30,6 @@ public class UserMapper {
         user.setStatus(UserStatus.ACTIVE);
 
         return user;
-    }
-
-    public AuthResponse toAuthResponse(final User user) {
-        return new AuthResponse(null, null,
-                user.getId(), user.getPhoneNumber(), user.getEmail(), user.getName(),
-                user.getProfilePictureUrl(), null, false, user.getMfaEnabled());
     }
 
     public AuthResponse toAuthResponseWithToken(final User user) {

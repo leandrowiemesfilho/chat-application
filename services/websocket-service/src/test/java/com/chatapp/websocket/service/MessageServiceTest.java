@@ -16,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
-public class MessageServiceTest {
+class MessageServiceTest {
     @Mock
     private SimpMessagingTemplate messagingTemplate;
 
@@ -24,7 +24,7 @@ public class MessageServiceTest {
     private MessageService messageService;
 
     @Test
-    public void testSendMessage() {
+    void testSendMessage() {
         // Given
         final ChatMessage message = new ChatMessage(
                 "userId",
@@ -55,7 +55,7 @@ public class MessageServiceTest {
     }
 
     @Test
-    public void testSendDeliveryStatus() {
+    void testSendDeliveryStatus() {
         // Given
         String messageId = "msg123";
         String recipientId = "user1";

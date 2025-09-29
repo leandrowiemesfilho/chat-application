@@ -69,6 +69,12 @@ public class JwtService {
         return claims.getSubject();
     }
 
+    public String extractUserId(final String token) {
+        final Claims claims = this.validateToken(token);
+
+        return claims.get("userId").toString();
+    }
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(this.jwtSecret.getBytes());
     }
